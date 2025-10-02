@@ -1,0 +1,156 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+// ------------------ Weather Record ADT ------------------
+class WeatherRecord {
+public:
+    string date;     // format: DD/MM/YYYY
+    string city;
+    double temperature;
+
+    WeatherRecord(string d = "", string c = "", double t = 0.0) {
+        date = d;
+        city = c;
+        temperature = t;
+    }
+};
+
+// ------------------ Weather Data Storage ------------------
+class WeatherStorage {
+private:
+    vector<string> cities;
+    vector<int> years;
+    vector<vector<double>> data; // 2D array [years][cities]
+
+    double sentinel = -9999; // For sparse data (missing entries)
+
+public:
+    WeatherStorage(vector<int> y, vector<string> c) {
+        years = y;
+        cities = c;
+        data.resize(years.size(), vector<double>(cities.size(), sentinel));
+    }
+
+    // Insert record
+    void insert(WeatherRecord wr) {
+        int year = stoi(wr.date.substr(6,4)); // extract YYYY from DD/MM/YYYY
+        int row = -1, col = -1;
+
+        for(int i=0;i<years.size();i++) if(years[i]==year) row = i;
+        for(int j=0;j<cities.size();j++) if(cities[j]==wr.city) col = j;
+
+        if(row!=-1 && col!=-1) {
+            data[row][col] = wr.temperature;
+        } else {
+            cout << "Invalid city or year for record: " << wr.city << " " << wr.date << endl;
+        }
+    }
+
+    // Delete record
+    void remove(string city, int year) {
+        int row=-1,col=-1;
+        for(int i=0;i<years.size();i++) if(years[i]==year) row=i;
+        for(int j=0;j<cities.size();j++) if(cities[j]==city) col=j;
+
+        if(row!=-1 && col!=-1) {
+            data[row][col] = sentinel;
+        }
+    }
+
+    // Retrieve all records for a city in a given year
+    void retrieve(string city, int year) {
+        int row=-1,col=-1;
+        for(int i=0;i<years.size();i++) if(years[i]==year) row=i;
+        for(int j=0;j<cities.size();j++) if(cities[j]==city) col=j;
+
+        if(row!=-1 && col!=-1) {
+            if(data[row][col]!=sentinel)
+                cout<<"Temperature in "<<city<<" ("<<year<<") = "<<data[row][col]<<"°C"<<endl;
+            else
+                cout<<"No data available for "<<city<<" in "<<year<<endl;
+        }
+    }
+
+    // Row-major access
+    void rowMajorAccess() {
+        cout<<"\nRow-Major Access (Year-wise):"<<endl;
+        for(int i=0;i<years.size();i++) {
+            cout<<years[i]<<": ";
+            for(int j=0;j<cities.size();j++) {
+                cout<<setw(8)<<(data[i][j]==sentinel ? -1 : data[i][j])<<" ";
+            }
+            cout<<endl;
+        }
+    }
+
+    // Column-major access
+    void columnMajorAccess() {
+        cout<<"\nColumn-Major Access (City-wise):"<<endl;
+        for(int j=0;j<cities.size();j++) {
+            cout<<cities[j]<<": ";
+            for(int i=0;i<years.size();i++) {
+                cout<<setw(8)<<(data[i][j]==sentinel ? -1 : data[i][j])<<" ";
+            }
+            cout<<endl;
+        }
+    }
+
+    // Handle sparse data (display only filled entries)
+    void handleSparseData() {
+        cout<<"\nNon-Sparse Records:"<<endl;
+        for(int i=0;i<years.size();i++) {
+            for(int j=0;j<cities.size();j++) {
+                if(data[i][j]!=sentinel) {
+                    cout<<"Year: "<<years[i]<<", City: "<<cities[j]
+                        <<", Temp: "<<data[i][j]<<"°C"<<endl;
+                }
+            }
+        }
+    }
+
+    // Complexity analysis
+    void analyzeComplexity() {
+        cout<<"\n--- Complexity Analysis ---"<<endl;
+        cout<<"Insert: O(1) (direct index access)"<<endl;
+        cout<<"Delete: O(1)"<<endl;
+        cout<<"Retrieve: O(1)"<<endl;
+        cout<<"Row/Column Traversal: O(N*M)"<<endl;
+        cout<<"Space Complexity: O(N*M)"<<endl;
+    }
+};
+
+// ------------------ Main ------------------
+int main() {
+    vector<int> years = {2023, 2024, 2025};
+    vector<string> cities = {"Delhi", "Mumbai", "Chennai"};
+
+    WeatherStorage ws(years, cities);
+
+    // Insert some records
+    ws.insert(WeatherRecord("01/01/2023", "Delhi", 15.5));
+    ws.insert(WeatherRecord("01/01/2024", "Mumbai", 30.2));
+    ws.insert(WeatherRecord("01/01/2025", "Chennai", 28.7));
+
+    // Display row-major & column-major
+    ws.rowMajorAccess();
+    ws.columnMajorAccess();
+
+    // Retrieve
+    ws.retrieve("Delhi", 2023);
+    ws.retrieve("Mumbai", 2025); // no data (sparse)
+
+    // Delete
+    ws.remove("Delhi", 2023);
+    ws.retrieve("Delhi", 2023);
+
+    // Sparse data handling
+    ws.handleSparseData();
+
+    // Complexity analysis
+    ws.analyzeComplexity();
+
+    return 0;
+}
