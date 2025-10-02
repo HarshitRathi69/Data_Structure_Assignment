@@ -1,0 +1,147 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <iomanip>
+using namespace std;
+
+// ------------------ Inventory Item ADT ------------------
+class InventoryItem {
+public:
+    int itemID;
+    string itemName;
+    int quantity;
+    float price;
+
+    InventoryItem(int id=0, string name="", int qty=0, float pr=0.0) {
+        itemID = id;
+        itemName = name;
+        quantity = qty;
+        price = pr;
+    }
+};
+
+// ------------------ Inventory Management System ------------------
+class InventorySystem {
+private:
+    vector<InventoryItem> items;
+    const int sparseThreshold = 2; // threshold for rarely restocked products
+
+public:
+    // Insert a new item
+    void insertItem(InventoryItem item) {
+        items.push_back(item);
+    }
+
+    // Delete an item by ID
+    void deleteItem(int id) {
+        for(auto it=items.begin(); it!=items.end(); it++) {
+            if(it->itemID == id) {
+                items.erase(it);
+                cout<<"Item with ID "<<id<<" deleted."<<endl;
+                return;
+            }
+        }
+        cout<<"Item not found!"<<endl;
+    }
+
+    // Search by ID
+    void searchItemByID(int id) {
+        for(auto &it : items) {
+            if(it.itemID == id) {
+                cout<<"Found: "<<it.itemName<<" | Qty: "<<it.quantity<<" | Price: "<<it.price<<endl;
+                return;
+            }
+        }
+        cout<<"Item not found!"<<endl;
+    }
+
+    // Search by Name
+    void searchItemByName(string name) {
+        for(auto &it : items) {
+            if(it.itemName == name) {
+                cout<<"Found: ID="<<it.itemID<<" | Qty: "<<it.quantity<<" | Price: "<<it.price<<endl;
+                return;
+            }
+        }
+        cout<<"Item not found!"<<endl;
+    }
+
+    // Display row-major ordering of Price & Quantity
+    void rowMajorDisplay() {
+        cout<<"\nRow-Major (Price, Quantity):"<<endl;
+        for(auto &it : items) {
+            cout<<"ItemID "<<it.itemID<<" -> Price: "<<it.price<<" , Qty: "<<it.quantity<<endl;
+        }
+    }
+
+    // Display column-major ordering of Price & Quantity
+    void columnMajorDisplay() {
+        cout<<"\nColumn-Major (All Prices, then All Quantities):"<<endl;
+        cout<<"Prices: ";
+        for(auto &it : items) cout<<it.price<<" ";
+        cout<<"\nQuantities: ";
+        for(auto &it : items) cout<<it.quantity<<" ";
+        cout<<endl;
+    }
+
+    // Sparse storage: list only rarely restocked products
+    void sparseRepresentation() {
+        cout<<"\nSparse Representation (rarely restocked products):"<<endl;
+        for(auto &it : items) {
+            if(it.quantity <= sparseThreshold) {
+                cout<<"ID="<<it.itemID<<", Name="<<it.itemName<<", Qty="<<it.quantity<<endl;
+            }
+        }
+    }
+
+    // Complexity analysis
+    void analyzeComplexity() {
+        cout<<"\n--- Complexity Analysis ---"<<endl;
+        cout<<"Insert: O(1) (push_back in vector)"<<endl;
+        cout<<"Delete: O(N) (linear search + erase)"<<endl;
+        cout<<"Search: O(N) worst case"<<endl;
+        cout<<"Row/Column Traversal: O(N)"<<endl;
+        cout<<"Sparse Representation: O(N)"<<endl;
+        cout<<"Space Complexity: O(N)"<<endl;
+    }
+
+    // Display all items
+    void displayAll() {
+        cout<<"\nCurrent Inventory:"<<endl;
+        for(auto &it : items) {
+            cout<<"ID="<<it.itemID<<", Name="<<it.itemName<<", Qty="<<it.quantity<<", Price="<<it.price<<endl;
+        }
+    }
+};
+
+// ------------------ Main ------------------
+int main() {
+    InventorySystem inv;
+
+    // Insert items
+    inv.insertItem(InventoryItem(101, "Rice", 10, 55.5));
+    inv.insertItem(InventoryItem(102, "Wheat", 2, 45.0));
+    inv.insertItem(InventoryItem(103, "Oil", 1, 120.0));
+
+    inv.displayAll();
+
+    // Search
+    inv.searchItemByID(102);
+    inv.searchItemByName("Oil");
+
+    // Delete
+    inv.deleteItem(101);
+    inv.displayAll();
+
+    // Row-major & Column-major
+    inv.rowMajorDisplay();
+    inv.columnMajorDisplay();
+
+    // Sparse representation
+    inv.sparseRepresentation();
+
+    // Complexity analysis
+    inv.analyzeComplexity();
+
+    return 0;
+}
